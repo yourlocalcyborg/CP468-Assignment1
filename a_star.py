@@ -72,6 +72,8 @@ class State:
 
     # sum of all tiles to targets
     # a.k.a. h_2
+    # inputs: current state, target state
+    # returns: sum of all manhattan distances
     def sum_manhattan_dists(tiles, targets):
         tileslist = tiles.state
         targetslist = targets.state
@@ -85,6 +87,9 @@ class State:
 
         return total
 
+    # a.k.a. h_1
+    # inputs: current state, target state
+    # returns: number of tiles of difference (not counting empty tile)
     def num_misplaced_tiles(tiles, targets):
         tileslist = tiles.state
         targetslist = targets.state
