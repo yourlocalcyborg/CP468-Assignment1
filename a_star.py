@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import heapq
 
 class State:
     state = None
@@ -12,9 +13,25 @@ class State:
     # [7,2,4,5,0,6,8,3,1]
     def __init__(self, state):
         self.state = state
+    
+    def copy(self):
+        return State(self.state.copy())
+
+    def __eq__(self, other):
+        if not isinstance(other, State):
+            return NotImplemented
+        return self.state == other.state
+   
+    def __lt__(self, other):
+        return tuple(self.state) < tuple(other.state)
+
+
+    # hash function implemented for heap
+    def __hash__(self):
+        return hash(tuple(self.state))
 
     # prints state to terminal
-    def printstate(self):
+    def print_state(self):
         for i in range(0, 3):
             for j in range(0, 3):
                 print(self.state[i*3 + j], end=" ")
@@ -38,6 +55,7 @@ class State:
         
     # inputs: tile index
     # returns: arrays of neighbouring tiles to tile
+    @staticmethod
     def get_tile_neighbours(tile):
         # Perhaps there is a better way to calculate Manhattan neighbours but it escapes me currently
         match tile:
@@ -64,6 +82,7 @@ class State:
     # a.k.a. number of moves to move tile to target space
     # inputs: tile index, target index
     # returns: manhattan distance between tile and target space
+    @staticmethod
     def calc_manhattan_dist(tile, target):
         tilepos = divmod(tile, 3)
         targetpos = divmod(target, 3)
@@ -74,6 +93,7 @@ class State:
     # a.k.a. h_2
     # inputs: current state, target state
     # returns: sum of all manhattan distances
+    @staticmethod
     def sum_manhattan_dists(tiles, targets):
         tileslist = tiles.state
         targetslist = targets.state
@@ -90,6 +110,7 @@ class State:
     # a.k.a. h_1
     # inputs: current state, target state
     # returns: number of tiles of difference (not counting empty tile)
+    @staticmethod
     def num_misplaced_tiles(tiles, targets):
         tileslist = tiles.state
         targetslist = targets.state
@@ -101,14 +122,53 @@ class State:
 
         return total
 
-    # should be able to write an A star function that takes a heuristic function as an argument like
-    #def a_star(self, targetstate, h_n):
-    #state.a_star(target, num_misplaced_tiles)
+    # A* search
+    # Finds lowest f(n) = g(n) + h(n) (where g(n) is the step cost from start, and h(n) is the heuristic cost to goal state),
+    # expands lowest cost unexpanded node, and repeats until solution is found. 
+    # inputs: target state to search for, h(n) heuristic function
+    # returns: solution, number of steps to find solution, number of nodes expanded
+    def a_star(self, target_state, h_n):
+        open_set = [(h_n(self, target_state), 0, self)]
+        g_scores = {self: 0}
+        came_from = {}
+        closed_set = set()
+        
+        nodes_expanded = 0
 
-    # also shouldn't need to worry about the g(n) part because any neighbouring state will be one move.
-    # unsure how to represent entire tree though, perhaps just have a visited list and an unexpanded nodes list,
-    # and just search the unexpanded nodes for the lowest heuristic score.
+        while open_set:
+            current_f, current_g, current_state = heapq.heappop(open_set)
+            
+            if current_state in closed_set:
+                continue
 
+            if current_state == target_state:
+                path = []
+                state = current_state
+                while state in came_from:
+                    path.append(state)
+                    state = came_from[state] 
+                path.append(self)
+                path.reverse()
+                
+                return path, len(path) - 1, nodes_expanded
+            
+            closed_set.add(current_state)
+            nodes_expanded += 1
+            
+            for neighbour in current_state.get_neighbours():
+                if neighbour in closed_set:
+                    continue
+            
+                tentative_g = current_g + 1
+
+                if neighbour not in g_scores or tentative_g < g_scores[neighbour]:
+                    came_from[neighbour] = current_state
+                    g_scores[neighbour] = tentative_g
+                    
+                    f_score = tentative_g + h_n(neighbour, target_state)
+                    heapq.heappush(open_set, (f_score, tentative_g, neighbour))
+
+        return None, 0, nodes_expanded
 
 init_list = [7, 2, 4, 5, 0, 6, 8, 3, 1]
 
@@ -117,11 +177,11 @@ goal_list = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 current_state = State(init_list)
 target_state = State(goal_list)
 print("test printing")
-current_state.printstate()
+current_state.print_state()
 
 print("test neighbours")
 for i in current_state.get_neighbours():
-    i.printstate()
+    i.print_state()
 
 print("test manhattan distance")
 print("dist from (0,0) to (0,1):", State.calc_manhattan_dist(0, 3), "(1)")
@@ -132,14 +192,36 @@ print("")
 
 print("test sum manhattan distances\n")
 print("sum of\n")
-current_state.printstate()
+current_state.print_state()
 print("distances to\n")
-target_state.printstate()
+target_state.print_state()
 print("equals", State.sum_manhattan_dists(current_state, target_state), "\n")
 
 print("test misplaced tiles")
 print("using init and target as previous,", State.num_misplaced_tiles(current_state, target_state), "(8)\n")
 print("using")
 new_state = State([0,1,3,2,5,6,8,7,4])
-new_state.printstate()
+new_state.print_state()
 print("and target as previous,", State.num_misplaced_tiles(new_state, target_state), "(6)")
+print("")
+
+print("test eq")
+print(target_state == current_state)
+print(target_state == target_state)
+print(target_state == target_state.copy())
+print("")
+
+print("test A*")
+print("solution with h_1:")
+soln, soln_steps, nodes_expanded = current_state.a_star(target_state, State.num_misplaced_tiles)
+for i in soln:
+    i.print_state()
+print("steps:", soln_steps)
+print("nodes_expanded:", nodes_expanded)
+
+print("solution with h_2:")
+soln, soln_steps, nodes_expanded = current_state.a_star(target_state, State.sum_manhattan_dists)
+for i in soln:
+    i.print_state()
+print("steps:", soln_steps)
+print("nodes_expanded:", nodes_expanded)
