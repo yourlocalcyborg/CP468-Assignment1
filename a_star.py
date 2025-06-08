@@ -128,22 +128,33 @@ class State:
     # inputs: target state to search for, h(n) heuristic function
     # returns: solution, number of steps to find solution, number of nodes expanded
     def a_star(self, target_state, h_n):
+        # set of discovered nodes that may be expanded
         open_set = [(h_n(self, target_state), 0, self)]
-        g_scores = {self: 0}
+
+        # for node n, came_from[n] is the node preceding it on the lowest cost path from start
         came_from = {}
+        
+        # nodes already expanded, can ignore
         closed_set = set()
         
+        # g_score[n] is currently known cost of cheapest path from start to n
+        g_scores = {self: 0}
+
         nodes_expanded = 0
 
         while open_set:
+            # gets state with lowest f_score
             current_f, current_g, current_state = heapq.heappop(open_set)
             
+            # skip if node already expanded
             if current_state in closed_set:
                 continue
 
+            # check if goal reached, return path if so
             if current_state == target_state:
                 path = []
                 state = current_state
+                # backtrack through came_from to figure out path to goal
                 while state in came_from:
                     path.append(state)
                     state = came_from[state] 
@@ -152,15 +163,18 @@ class State:
                 
                 return path, len(path) - 1, nodes_expanded
             
+            # mark node as expanded
             closed_set.add(current_state)
             nodes_expanded += 1
-            
+           
+            # check if we've just found a better path to any neighbours
             for neighbour in current_state.get_neighbours():
                 if neighbour in closed_set:
                     continue
             
                 tentative_g = current_g + 1
 
+                # save g_score for neighbour if we have a better one or one doesn't exist yet
                 if neighbour not in g_scores or tentative_g < g_scores[neighbour]:
                     came_from[neighbour] = current_state
                     g_scores[neighbour] = tentative_g
@@ -168,6 +182,7 @@ class State:
                     f_score = tentative_g + h_n(neighbour, target_state)
                     heapq.heappush(open_set, (f_score, tentative_g, neighbour))
 
+        # return None if no solution is found
         return None, 0, nodes_expanded
 
 init_list = [7, 2, 4, 5, 0, 6, 8, 3, 1]
