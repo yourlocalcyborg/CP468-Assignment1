@@ -101,6 +101,13 @@ class State:
 
         return total
 
+    # should be able to write an A star function that takes a heuristic function as an argument like
+    #def a_star(self, targetstate, h_n):
+    # state.a_star(target, num_misplaced_tiles)
+
+    # also shouldn't need to worry about the g(n) part because any neighbouring state will be one move.
+    # unsure how to represent entire tree though, perhaps just have a visited list and an unexpanded nodes list,
+    # and just search the unexpanded nodes for the lowest heuristic score.
 
 
 init_list = [7, 2, 4, 5, 0, 6, 8, 3, 1]
