@@ -300,8 +300,8 @@ print("")
 print("Generate 100 random puzzles to solve")
 num_generations = 100
 states = []
-print("| #   | State                       | h1 steps | h1 exp. nodes | h2 steps | h2 exp. nodes | h3 steps | h3 exp. nodes |")
-print("|-----|-----------------------------|----------|---------------|----------|---------------|----------|---------------|")
+print(f"| #  | State {' ':21} | h1 steps | h1 nodes | h2 steps | h2 nodes | h3 steps | h3 nodes |")
+print(f"|{'-'*4}|{'-'*29}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|")
 for i in range(num_generations):
     statelist = [0,1,2,3,4,5,6,7,8]
     state = State(statelist)
@@ -312,4 +312,4 @@ for i in range(num_generations):
     h1_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.num_misplaced_tiles)
     h2_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.sum_manhattan_dists)
     h3_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.linear_conflicts)
-    print(f"| {i+1:3} | {state.state} | {h1_results[1]:8} | {h1_results[2]:13} | {h1_results[1]:8} | {h2_results[2]:13} | {h3_results[1]:8} | {h3_results[2]:13} |")
+    print(f"| {i:2} | {state.state} | {h1_results[1]:8} | {h1_results[2]:8} | {h1_results[1]:8} | {h2_results[2]:8} | {h3_results[1]:8} | {h3_results[2]:8} |")
