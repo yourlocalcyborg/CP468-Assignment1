@@ -300,6 +300,9 @@ print("")
 print("Generate 100 random puzzles to solve")
 num_generations = 100
 states = []
+h1_results_list = []
+h2_results_list = []
+h3_results_list = []
 print(f"| #  | State {' ':21} | h1 steps | h1 nodes | h2 steps | h2 nodes | h3 steps | h3 nodes |")
 print(f"|{'-'*4}|{'-'*29}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|{'-'*10}|")
 for i in range(num_generations):
@@ -312,4 +315,31 @@ for i in range(num_generations):
     h1_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.num_misplaced_tiles)
     h2_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.sum_manhattan_dists)
     h3_results = state.a_star(State([0,1,2,3,4,5,6,7,8]), State.linear_conflicts)
+    h1_results_list.append(h1_results)
+    h2_results_list.append(h2_results)
+    h3_results_list.append(h3_results)
     print(f"| {i:2} | {state.state} | {h1_results[1]:8} | {h1_results[2]:8} | {h1_results[1]:8} | {h2_results[2]:8} | {h3_results[1]:8} | {h3_results[2]:8} |")
+
+
+h1_steps_avg = 0
+h1_nodes_avg = 0
+h2_steps_avg = 0
+h2_nodes_avg = 0
+h3_steps_avg = 0
+h3_nodes_avg = 0
+for i in range(num_generations):
+    h1_steps_avg += h1_results_list[i][1]
+    h1_nodes_avg += h1_results_list[i][2]
+    h2_steps_avg += h2_results_list[i][1]
+    h2_nodes_avg += h2_results_list[i][2]
+    h3_steps_avg += h3_results_list[i][1]
+    h3_nodes_avg += h3_results_list[i][2]
+
+h1_steps_avg /= num_generations
+h1_nodes_avg /= num_generations
+h2_steps_avg /= num_generations
+h2_nodes_avg /= num_generations
+h3_steps_avg /= num_generations
+h3_nodes_avg /= num_generations
+
+print(f"| NA | Averages {' ':18} | {h1_steps_avg:8} | {h1_nodes_avg:8} | {h2_steps_avg:8} | {h2_nodes_avg:8} | {h3_steps_avg:8} | {h3_nodes_avg:8} |")
